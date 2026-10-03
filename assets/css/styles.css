@@ -1,0 +1,592 @@
+/* ===========================================================================
+   MAXSAGA — "TASTE THE EPIC"
+   ---------------------------------------------------------------------------
+   Tailwind (play CDN) covers layout and spacing utilities. This file holds what
+   Tailwind can't express: the brand lockup, the three background devices
+   printed on the real packs, the packshot treatment, and the motion.
+
+   Everything here is derived from the packaging in assets/MAXSAGA PRODUCTS.pdf:
+     · wordmark      white heavy sans on a near-black plate with a gold keyline
+     · tagline       white on a red lozenge
+     · sunburst      radiating spokes behind the Rings packs
+     · concentric    nested rings behind the Sticks packs
+     · burst         splash glow behind the Balls and specialty packs
+     · price flash   a gold starburst carrying ₹5/- ONLY
+     · veg mark      the green dot-in-a-square, on every pack
+
+   THEME NOTE: the page deliberately commits to one visual world — packs under
+   shop lighting — so there is no light/dark swap. Every surface and text colour
+   is therefore painted explicitly and the page never borrows a host ground.
+   =========================================================================== */
+
+:root {
+  /* --- Ground. Near-black with a faint blue bias, matching the pack base --- */
+  --ink:         #0A0A12;
+  --ink-raised:  #14141F;
+  --ink-sunken:  #06060D;
+  --hairline:    rgba(242, 240, 247, 0.12);
+  --hairline-br: rgba(242, 240, 247, 0.34);
+
+  /* --- Print inks lifted straight off the packaging --- */
+  --red:    #E31E24;   /* the TASTE THE EPIC lozenge */
+  --gold:   #FFC20E;   /* the wordmark keyline and the price starburst */
+  --navy:   #101A3C;   /* the wordmark plate on the Balls packs */
+  --veg:    #0A8F3C;   /* the vegetarian mark */
+
+  --foil:      #F2F0F7;
+  --foil-dim:  #9A95AD;
+
+  /* Fallback accent. Every card and packshot overrides --accent inline with
+     its own pack colour from data.js. */
+  --accent: #E31E24;
+
+  --radius: 18px;
+  --ease:   cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+
+html { scroll-behavior: smooth; }
+
+body {
+  /* Set here rather than only via a Tailwind class on <body>, so the page also
+     renders correctly when its markup is embedded in a host document that
+     supplies its own <body> tag. */
+  font-family: "Mukta", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  background-color: var(--ink);
+  color: var(--foil);
+  overflow-x: hidden;            /* the hero devices and marquee overhang */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Everything sits above the fixed hero wash. */
+.layer { position: relative; z-index: 1; }
+
+::selection { background: var(--red); color: #FFFFFF; }
+
+/* One visible focus ring for every control on the page. */
+:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--ink-sunken); }
+::-webkit-scrollbar-thumb { background: #2B2B3D; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--red); }
+
+/* ---------------------------------------------------------------------------
+   Type roles
+   --------------------------------------------------------------------------- */
+
+.font-display {
+  font-family: "Archivo Black", "Arial Black", Impact, sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+/* Small uppercase labels: eyebrows, metadata, buttons. */
+.label {
+  font-family: "Archivo Black", "Arial Black", Impact, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------------------------------
+   Brand lockup
+   A faithful rebuild of the printed one: white wordmark on a dark plate with a
+   gold keyline, the red tagline lozenge beneath it.
+   --------------------------------------------------------------------------- */
+
+.lockup { display: inline-flex; flex-direction: column; align-items: center; gap: 0.3em; }
+
+.lockup__mark {
+  display: block;
+  padding: 0.16em 0.5em 0.2em;
+  border: 0.085em solid var(--gold);
+  border-radius: 0.22em;
+  background: #0C0C16;
+  color: #FFFFFF;
+  font-family: "Archivo Black", "Arial Black", Impact, sans-serif;
+  letter-spacing: 0.015em;
+  line-height: 1;
+  text-shadow: 0 0.04em 0 rgba(0, 0, 0, 0.6);
+}
+
+.lockup__tagline {
+  display: block;
+  padding: 0.3em 1em 0.34em;
+  border-radius: 99px;
+  background: var(--red);
+  color: #FFFFFF;
+  font-family: "Archivo Black", "Arial Black", Impact, sans-serif;
+  font-size: 0.3em;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* The ™ sits at the wordmark's shoulder, as printed. */
+.lockup__tm {
+  font-size: 0.22em;
+  vertical-align: top;
+  letter-spacing: 0;
+}
+
+/* --- Vegetarian mark: green dot inside a green square outline ------------- */
+
+.veg-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 1em;
+  height: 1em;
+  border: 0.1em solid var(--veg);
+  border-radius: 0.1em;
+  background: #FFFFFF;
+  flex: 0 0 auto;
+}
+
+.veg-mark::before {
+  content: "";
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: var(--veg);
+}
+
+/* ---------------------------------------------------------------------------
+   Pack devices
+   The three motifs printed behind the product on the packs. Each reads the
+   product's own --accent, so a card's backdrop is the pack's own colour.
+   --------------------------------------------------------------------------- */
+
+.device {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  transition: opacity 0.45s var(--ease), transform 0.8s var(--ease);
+  /* Fade the device out toward the card edges so it reads as lighting rather
+     than wallpaper. */
+  -webkit-mask-image: radial-gradient(circle at 50% 44%, #000 28%, transparent 72%);
+  mask-image: radial-gradient(circle at 50% 44%, #000 28%, transparent 72%);
+}
+
+/* Rings packs: radiating spokes. */
+.device--sunburst {
+  background: repeating-conic-gradient(
+    from 0deg at 50% 44%,
+    var(--accent) 0deg 5.5deg,
+    transparent 5.5deg 11deg
+  );
+}
+
+/* Sticks packs: nested concentric rings. */
+.device--rings {
+  background: repeating-radial-gradient(
+    circle at 50% 44%,
+    var(--accent) 0 16px,
+    transparent 16px 34px
+  );
+}
+
+/* Balls and specialty packs: a splash glow. */
+.device--burst {
+  background:
+    radial-gradient(circle at 50% 44%, var(--accent) 0%, transparent 58%),
+    repeating-conic-gradient(from 12deg at 50% 44%, var(--accent) 0deg 2.5deg, transparent 2.5deg 18deg);
+}
+
+/* ---------------------------------------------------------------------------
+   Price starburst
+   The gold ₹5/- ONLY flash printed on the Dhamaaka, Hot Wheels and Polo packs.
+   --------------------------------------------------------------------------- */
+
+.flash {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 4.1rem;
+  height: 4.1rem;
+  color: #1A0E00;
+  font-family: "Archivo Black", "Arial Black", Impact, sans-serif;
+  line-height: 0.95;
+  text-align: center;
+  rotate: -10deg;
+  flex: 0 0 auto;
+}
+
+.flash::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 50%;
+  /* Solid gold underneath, so the spokes degrade to a plain roundel if
+     repeating-conic-gradient is unavailable. */
+  background-color: var(--gold);
+  background-image: repeating-conic-gradient(
+    from 0deg,
+    var(--gold) 0 10deg,
+    #FFE07A 10deg 20deg
+  );
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+}
+
+.flash__amount { font-size: 1.15rem; }
+.flash__unit { font-size: 0.5rem; letter-spacing: 0.12em; }
+
+/* ---------------------------------------------------------------------------
+   Hero
+   --------------------------------------------------------------------------- */
+
+.hero-wash {
+  position: absolute;
+  inset: -25% -15% auto -15%;
+  height: 135%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 44% at 16% 26%, rgba(12, 134, 208, 0.45), transparent 70%),
+    radial-gradient(36% 40% at 84% 18%, rgba(155, 39, 206, 0.40), transparent 70%),
+    radial-gradient(42% 38% at 64% 88%, rgba(227, 30, 36, 0.38), transparent 72%),
+    radial-gradient(30% 32% at 34% 94%, rgba(255, 194, 14, 0.20), transparent 72%);
+  filter: blur(10px);
+  animation: wash 20s var(--ease) infinite alternate;
+}
+
+/* The brand's own sunburst, turned very slowly behind the hero. */
+.hero-rays {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: 150vmax;
+  height: 150vmax;
+  margin: -75vmax 0 0 -75vmax;
+  pointer-events: none;
+  opacity: 0.17;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(242, 240, 247, 0.9) 0deg 1.6deg,
+    transparent 1.6deg 7deg
+  );
+  -webkit-mask-image: radial-gradient(circle, #000 8%, transparent 58%);
+  mask-image: radial-gradient(circle, #000 8%, transparent 58%);
+  animation: spin 150s linear infinite;
+}
+
+@keyframes wash {
+  from { transform: translate3d(-2%, -1%, 0) scale(1); }
+  to   { transform: translate3d(2%, 2%, 0) scale(1.07); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* --- Dangler fan ---------------------------------------------------------
+   In a kirana shop the ₹5 packs hang in a strip in the doorway. The hero is
+   that strip, fanned out: a hero pack in front with two flanking it.
+
+   The static tilt uses the `rotate` property and the sway uses `transform`, so
+   the two compose instead of overwriting each other. */
+
+.dangler__slot {
+  position: relative;
+  flex: 0 0 auto;
+  /* Flex items default to min-width:auto, which for a slot holding an 820px
+     packshot means "never narrower than 820px" — that silently widened the
+     whole hero track on phones. */
+  min-width: 0;
+}
+
+.dangler__slot:nth-child(1) { width: 36%; margin-top: 11%; rotate: -7deg; }
+.dangler__slot:nth-child(2) { width: 46%; margin: 0 -9%; z-index: 2; }
+.dangler__slot:nth-child(3) { width: 36%; margin-top: 11%; rotate: 7deg; }
+
+.dangler__pack {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  transform-origin: 50% -16%;
+  animation: sway 6.5s var(--ease) infinite alternate;
+  filter: drop-shadow(0 24px 28px rgba(0, 0, 0, 0.62));
+}
+
+.dangler__slot:nth-child(2) .dangler__pack { animation-duration: 7.8s; animation-delay: -1.6s; }
+.dangler__slot:nth-child(3) .dangler__pack { animation-duration: 8.6s; animation-delay: -3.2s; }
+
+@keyframes sway {
+  from { transform: rotate(-2.2deg) translateY(0); }
+  to   { transform: rotate(2.2deg) translateY(-7px); }
+}
+
+/* ---------------------------------------------------------------------------
+   Marquee
+   --------------------------------------------------------------------------- */
+
+.marquee {
+  overflow: hidden;
+  background: var(--red);
+  border-top: 2px solid var(--gold);
+  border-bottom: 2px solid var(--gold);
+}
+
+.marquee__track {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+.marquee__track > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 0.55rem 1.1rem;
+  white-space: nowrap;
+}
+
+@keyframes marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+/* ---------------------------------------------------------------------------
+   Product card
+   --------------------------------------------------------------------------- */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--ink-raised), var(--ink-sunken));
+  transition: transform 0.4s var(--ease), border-color 0.4s var(--ease), box-shadow 0.4s var(--ease);
+}
+
+.card:hover,
+.card:focus-within {
+  transform: translateY(-6px);
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  box-shadow: 0 20px 50px -20px var(--accent);
+}
+
+.card[hidden] { display: none; }
+
+/* --- Packshot stage ------------------------------------------------------ */
+
+.shot {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem 1rem 0.75rem;
+  border-radius: var(--radius) var(--radius) 0 0;
+  isolation: isolate;
+}
+
+.shot__img {
+  position: relative;
+  z-index: 1;
+  width: 72%;
+  max-width: 190px;
+  height: auto;
+  filter: drop-shadow(0 18px 20px rgba(0, 0, 0, 0.65));
+  transition: transform 0.5s var(--ease);
+}
+
+.card:hover .shot__img,
+.card:focus-within .shot__img { transform: translateY(-7px) rotate(-2deg) scale(1.04); }
+
+.card:hover .device,
+.card:focus-within .device { opacity: 0.85; transform: rotate(9deg) scale(1.1); }
+
+/* The price flash sits on the stage, top-right, tilted like the printed one. */
+.shot__flash { position: absolute; top: 0.85rem; right: 0.85rem; }
+
+/* --- Free-gift flash ----------------------------------------------------- */
+
+.gift-badge {
+  background: var(--gold);
+  color: #1A0E00;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* --- Add to cart --------------------------------------------------------- */
+
+.btn-add {
+  background: var(--foil);
+  color: var(--ink);
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), transform 0.12s var(--ease);
+}
+
+.btn-add:hover { background: var(--gold); }
+.btn-add:active { transform: scale(0.97); }
+
+/* Held for ~1.3s after a successful add, so the card itself confirms. */
+.btn-add.is-added { background: var(--veg); color: #FFFFFF; }
+
+/* ---------------------------------------------------------------------------
+   Filter bar
+   --------------------------------------------------------------------------- */
+
+.filter-btn {
+  border: 1px solid var(--hairline);
+  color: var(--foil-dim);
+  background: rgba(242, 240, 247, 0.04);
+  transition: color 0.25s var(--ease), background 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+
+.filter-btn:hover { color: var(--foil); border-color: var(--hairline-br); }
+
+.filter-btn[aria-pressed="true"] {
+  background: var(--red);
+  border-color: var(--red);
+  color: #FFFFFF;
+}
+
+/* --- Cart line thumbnail -------------------------------------------------
+   The card's .shot carries card-sized padding and corner radii, so the drawer
+   gets its own small stage rather than reusing it. */
+
+.thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 0.25rem;
+  border-radius: 10px;
+  background: var(--ink-sunken);
+  isolation: isolate;
+}
+
+.thumb .device { opacity: 0.4; }
+
+.thumb img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6));
+}
+
+/* ---------------------------------------------------------------------------
+   Cart drawer
+   --------------------------------------------------------------------------- */
+
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(6, 6, 13, 0.8);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s var(--ease), visibility 0.35s var(--ease);
+}
+
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 27rem;
+  height: 100%;
+  background: var(--ink-raised);
+  border-left: 1px solid var(--hairline);
+  box-shadow: -30px 0 70px -20px rgba(0, 0, 0, 0.9);
+  transform: translate3d(100%, 0, 0);
+  visibility: hidden;
+  transition: transform 0.4s var(--ease), visibility 0.4s var(--ease);
+}
+
+body.drawer-open { overflow: hidden; }
+body.drawer-open .drawer-backdrop { opacity: 1; visibility: visible; }
+body.drawer-open .drawer-panel { transform: translate3d(0, 0, 0); visibility: visible; }
+
+.qty-btn {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  color: var(--foil);
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.qty-btn:hover { background: rgba(242, 240, 247, 0.1); border-color: var(--hairline-br); }
+
+/* Header badge. Re-triggered by toggling the class from app.js. */
+.badge-pop { animation: pop 0.42s var(--ease); }
+
+@keyframes pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+
+/* ---------------------------------------------------------------------------
+   Toast
+   --------------------------------------------------------------------------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  z-index: 70;
+  opacity: 0;
+  transform: translate3d(-50%, 150%, 0);
+  transition: transform 0.4s var(--ease), opacity 0.4s var(--ease);
+}
+
+.toast.is-visible { opacity: 1; transform: translate3d(-50%, 0, 0); }
+
+/* ---------------------------------------------------------------------------
+   Reveal on scroll
+   --------------------------------------------------------------------------- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+}
+
+.reveal.is-in { opacity: 1; transform: none; }
+
+/* ---------------------------------------------------------------------------
+   Reduced motion — drop the ambient loops, keep the state changes.
+   --------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  .hero-wash,
+  .hero-rays,
+  .dangler__pack,
+  .marquee__track,
+  .badge-pop {
+    animation: none !important;
+  }
+
+  .reveal { opacity: 1; transform: none; transition: none; }
+
+  .card,
+  .shot__img,
+  .device { transition: none; }
+}
